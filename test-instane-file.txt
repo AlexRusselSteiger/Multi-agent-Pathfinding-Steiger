@@ -1,0 +1,14 @@
+// Map Size (Lines Columns)
+3 3
+
+// Map (. = open, X = obstacle)
+...
+X.X
+XXX
+
+// Agents Count
+2
+
+// Agents: (start_row start_col end_row end_col)
+0 0 0 2
+0 2 0 0
