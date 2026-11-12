@@ -12,6 +12,6 @@ XXX
 // Agents Count
 2
 
-// Agents: (start_row start_col end_row end_col)
-0 0 0 2
-0 2 0 0
+// Agents: (start_col start_row end_col end_row)
+0 0 2 0
+2 0 0 0
