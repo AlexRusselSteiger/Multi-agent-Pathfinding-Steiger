@@ -1,3 +1,6 @@
+// Makespan 
+4
+
 // Map Size (Lines Columns)
 3 3
 
