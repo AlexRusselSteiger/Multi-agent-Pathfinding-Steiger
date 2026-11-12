@@ -10,3 +10,9 @@ def load_instance(input_file):
     grid = []
     agents_starts = []
     agents_targets = []
+
+    with open(input_file, "r") as file: 
+        LEN_OF_GRID = int(next(file))
+        WIDTH_OF_GRID = int(next(file))
+        grid 
+        NR_OF_AGENTS = int(next(file))
