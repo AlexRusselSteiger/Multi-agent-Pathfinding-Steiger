@@ -58,6 +58,16 @@ def encode(instance):
     for agent1 in range(NR_OF_AGENTS):      # no agents can be at the same square at the same time
         for agent2 in range(agent1 + 1, NR_OF_AGENTS):
             for t in range(MAKESPAN + 1):
-                for x in range(LEN_OF_GRID):
-                    for y in range(WIDTH_OF_GRID):
+                for x in range(WIDTH_OF_GRID):
+                    for y in range(LEN_OF_GRID):
                         cnf.append([-position_to_ID(x, y, agent1, t)], [-position_to_ID(x, y, agent2, t), 0])
+
+    for agent in range(NR_OF_AGENTS):   # clause for allowed agent moves
+        for t in range(MAKESPAN):
+            for x in range(WIDTH_OF_GRID):
+                for y in range(LEN_OF_GRID):
+                        clause = [-position_to_ID(x, y, agent, t), position_to_ID(x, y, agent, t+1)]        # forbiding current position, but allowing waiting 
+                        for new_x, new_y in accessible_neighbour_tiles(x, y, grid):     # using support function for listing available positions
+                            clause.append(position_to_ID(new_x, new_y, agent, t + 1))
+                        clause.append(0)
+                        cnf.append(clause)
