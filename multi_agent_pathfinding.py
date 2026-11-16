@@ -28,7 +28,6 @@ def load_instance(input_file):
 
     return grid, agents_starts, agents_targets  
 
-
 def position_to_ID(x, y, agent, time):
     return agent + + (x * NR_OF_AGENTS) + (y * WIDTH_OF_GRID * NR_OF_AGENTS) + (time * LEN_OF_GRID * WIDTH_OF_GRID * NR_OF_AGENTS) + 1
 
@@ -36,9 +35,23 @@ def accessible_neighbour_tiles(x, y, grid):
     neighbour_tiles = []
     moves = [(0, 1), (1, 0), (-1, 0), (0, -1)]
     for dx, dy in moves:
-        nx, ny = x + dx, y + dy
-        if 0 <= nx < WIDTH_OF_GRID and 0 <= ny < LEN_OF_GRID:
-            if grid[ny][nx] == ".":
-                neighbour_tiles.append((nx, ny))
+        new_x = x + dx
+        new_y = y + dy
+        if 0 <= new_x < WIDTH_OF_GRID and 0 <= new_y < LEN_OF_GRID:
+            if grid[new_y][new_x] == ".":
+                neighbour_tiles.append((new_x, new_y))
 
     return neighbour_tiles
+
+def encode(instance):
+    cnf = []
+    grid = instance[0]
+    agents_starts = instance[1]
+    agents_targets = instance[2]
+
+    for agent, (x,y) in range(len(agents_starts)):   # starting agents positions
+        cnf.append([position_to_ID(x, y, agent, 0)])
+
+    for agent, (x,y) in range(len(agents_targets)):      # target agents positions
+        cnf.append([position_to_ID(x, y, agent, MAKESPAN),0])
+
