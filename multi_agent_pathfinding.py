@@ -55,3 +55,9 @@ def encode(instance):
     for agent, (x,y) in range(len(agents_targets)):      # target agents positions
         cnf.append([position_to_ID(x, y, agent, MAKESPAN),0])
 
+    for agent1 in range(NR_OF_AGENTS):      # no agents can be at the same square at the same time
+        for agent2 in range(agent1 + 1, NR_OF_AGENTS):
+            for t in range(MAKESPAN + 1):
+                for x in range(LEN_OF_GRID):
+                    for y in range(WIDTH_OF_GRID):
+                        cnf.append([-position_to_ID(x, y, agent1, t)], [-position_to_ID(x, y, agent2, t), 0])
