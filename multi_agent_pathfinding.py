@@ -7,6 +7,8 @@ def load_instance(input_file):
     global LEN_OF_GRID      
     global WIDTH_OF_GRID
     global NR_OF_AGENTS
+    global NR_SQUARES
+    global NR_AT_VAR
 
     grid = []
     agents_starts = []
@@ -23,6 +25,20 @@ def load_instance(input_file):
             c = line.split()
             agents_starts.append((int(c[0]), int(c[1])))        # start_X start_Y  
             agents_targets.append((int(c[2]), int(c[3])))       # target_X target_Y 
-            
 
-    return grid, agents_starts, agents_targets
+    return grid, agents_starts, agents_targets  
+
+
+def position_to_ID(x, y, agent, time):
+    return agent + + (x * NR_OF_AGENTS) + (y * WIDTH_OF_GRID * NR_OF_AGENTS) + (time * LEN_OF_GRID * WIDTH_OF_GRID * NR_OF_AGENTS) + 1
+
+def accessible_neighbour_tiles(x, y, grid):
+    neighbour_tiles = []
+    moves = [(0, 1), (1, 0), (-1, 0), (0, -1)]
+    for dx, dy in moves:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < WIDTH_OF_GRID and 0 <= ny < LEN_OF_GRID:
+            if grid[ny][nx] == ".":
+                neighbour_tiles.append((nx, ny))
+
+    return neighbour_tiles
