@@ -55,7 +55,7 @@ def encode(instance):
     for agent, (x,y) in range(len(agents_targets)):      # target agents positions
         cnf.append([position_to_ID(x, y, agent, MAKESPAN),0])
 
-    for agent1 in range(NR_OF_AGENTS):      # no agents can be at the same square at the same time
+    for agent1 in range(NR_OF_AGENTS):      # multiple agents cant be at the same square at the same time
         for agent2 in range(agent1 + 1, NR_OF_AGENTS):
             for t in range(MAKESPAN + 1):
                 for x in range(WIDTH_OF_GRID):
@@ -71,3 +71,20 @@ def encode(instance):
                             clause.append(position_to_ID(new_x, new_y, agent, t + 1))
                         clause.append(0)
                         cnf.append(clause)
+
+    for agent in range(NR_OF_AGENTS):       # agent cant be at 2 squares at the same time
+        for t in range(MAKESPAN + 1):
+            for x in range(WIDTH_OF_GRID):
+                for y in range(LEN_OF_GRID):
+                        for x2 in range(WIDTH_OF_GRID):
+                            for y2 in range(LEN_OF_GRID):
+                                if (x, y) != (x2, y2):
+                                    cnf.append([-position_to_ID(x, y, agent, t), -position_to_ID(x2, y2, agent, t), 0])
+
+    for agent1 in range(NR_OF_AGENTS): # forbiding head on collisions/swaps
+       for agent2 in range(agent1 + 1, NR_OF_AGENTS):
+            for t in range(MAKESPAN):
+                for x in range(WIDTH_OF_GRID):
+                    for y in range(LEN_OF_GRID):
+                       for x2, y2 in accessible_neighbour_tiles(x, y, grid):
+                        cnf.append([-position_to_ID(x, y, agent1, t), -position_to_ID(x2, y2, agent1, t + 1), -position_to_ID(x2, y2, agent2, t), -position_to_ID(x, y, agent2, t + 1), 0])
