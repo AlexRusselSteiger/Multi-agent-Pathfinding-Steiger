@@ -1,8 +1,7 @@
 import subprocess
 from argparse import ArgumentParser
 
-def load_instance(input_file):
-    # reads the parameters of instance from the file and returns the grid and locations of the agents starts and targets
+def load_instance(input_file):   # reads the parameters of instance from the file and returns the grid and locations of the agents starts and targets
     global MAKESPAN
     global LEN_OF_GRID      
     global WIDTH_OF_GRID
@@ -128,3 +127,54 @@ def print_result(result, grid):
         for row in display_grid:
             print(" ".join(row))
         print()
+
+if __name__ == "__main__":
+    parser = ArgumentParser()  # parses command line arguments
+
+    parser.add_argument(
+        "-i",
+        "--input",
+        default="input.in",
+        type=str,
+        help="The instance file.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        default="formula.cnf",
+        type=str,
+        help="Output file for the DIMACS format (i.e. the CNF formula).",
+    )
+    parser.add_argument(
+        "-s",
+        "--solver",
+        default="glucose-syrup",
+        type=str,
+        help="The SAT solver to be used.",
+    )
+    parser.add_argument(
+        "-v",
+        "--verb",
+        default=1,
+        type=int,
+        choices=range(0, 2),
+        help="Verbosity of the SAT solver used.",
+    )
+    parser.add_argument(
+        "-c",
+        "--print-cnf",
+        action="store_true",
+        help="Print the constructed CNF formula in DIMACS format.",
+    )
+    args = parser.parse_args()
+
+    grid, starts, goals = load_instance(args.input)  # loads the input instance
+    cnf, nr_vars = encode(grid, starts, goals)  # encodes the problem into CNF formula
+
+    if args.print_cnf:  # prints the CNF formula to stdout
+        print(f"p cnf {nr_vars} {len(cnf)}")
+        for clause in cnf:
+            print(" ".join(str(lit) for lit in clause))
+
+    result = call_solver(cnf, nr_vars, args.output, args.solver, args.verb)  # calls the SAT solver
+    print_result(result, grid)  # decodes and prints the result
