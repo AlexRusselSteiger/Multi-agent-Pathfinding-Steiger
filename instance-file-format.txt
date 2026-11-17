@@ -1,8 +1,11 @@
 // Makespan 
 4
 
-// Map Size (Lines Columns)
-3 3
+// Map Width
+3 
+
+// Map Lenght
+3
 
 // Map (. = open, X = obstacle)
 ...
