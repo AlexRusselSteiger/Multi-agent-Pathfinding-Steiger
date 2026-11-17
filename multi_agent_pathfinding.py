@@ -97,3 +97,34 @@ def call_solver(cnf, nr_vars, output_name, solver_name, verbosity): # writes CNF
             file.write(" ".join(str(lit) for lit in clause) + "\n")
 
     return subprocess.run(["./" + solver_name, "-model", "-verb=" + str(verbosity), output_name], stdout=subprocess.PIPE)   # calls the SAT solver and returns its output
+
+def print_result(result, grid):
+    output = result.stdout.decode("utf-8")
+    for line in output.splitlines():
+        print(line)
+
+    if result.returncode != 10: # returns if there isnt a solution for given makespan
+        print(f"No solution for MAKESPAN = {MAKESPAN}")
+        return
+    
+    model = []  # parses the model from the output of the solver
+    for line in result.stdout.decode("utf-8").split("\n"):
+        if line.startswith("v"):
+            vars = line.split()
+            vars.remove("v")
+            model.extend(int(v) for v in vars)
+    model.remove(0)
+
+    for t in range(MAKESPAN + 1):   # decodes agent positions for each timestep
+        print("Timestep " + str(t) + ":")
+        display_grid = [list(row) for row in grid]
+
+        for agent in range(NR_OF_AGENTS):
+            for y in range(LEN_OF_GRID):
+                for x in range(WIDTH_OF_GRID):
+                    if model[position_to_ID(x, y, agent, t) - 1] > 0:
+                        display_grid[y][x] = str(agent)
+
+        for row in display_grid:
+            print(" ".join(row))
+        print()
