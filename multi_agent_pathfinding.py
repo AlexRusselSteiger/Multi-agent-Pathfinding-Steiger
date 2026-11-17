@@ -26,7 +26,7 @@ def load_instance(input_file):   # reads the parameters of instance from the fil
     return grid, agents_starts, agents_targets  
 
 def position_to_ID(x, y, agent, time):
-    return agent + + (x * NR_OF_AGENTS) + (y * WIDTH_OF_GRID * NR_OF_AGENTS) + (time * LEN_OF_GRID * WIDTH_OF_GRID * NR_OF_AGENTS) + 1
+    return agent + (x * NR_OF_AGENTS) + (y * WIDTH_OF_GRID * NR_OF_AGENTS) + (time * LEN_OF_GRID * WIDTH_OF_GRID * NR_OF_AGENTS) + 1
 
 def accessible_neighbour_tiles(x, y, grid):
     neighbour_tiles = []
@@ -40,24 +40,21 @@ def accessible_neighbour_tiles(x, y, grid):
 
     return neighbour_tiles
 
-def encode(instance):
+def encode(grid, agents_starts, agents_targets):
     cnf = []
-    grid = instance[0]
-    agents_starts = instance[1]
-    agents_targets = instance[2]
 
-    for agent, (x,y) in range(len(agents_starts)):   # starting agents positions
-        cnf.append([position_to_ID(x, y, agent, 0)])
+    for agent, (x,y) in enumerate(agents_starts):   # starting agents positions
+        cnf.append([position_to_ID(x, y, agent, 0), 0])
 
-    for agent, (x,y) in range(len(agents_targets)):      # target agents positions
-        cnf.append([position_to_ID(x, y, agent, MAKESPAN),0])
+    for agent, (x,y) in enumerate(agents_targets):      # target agents positions
+        cnf.append([position_to_ID(x, y, agent, MAKESPAN), 0])
 
     for agent1 in range(NR_OF_AGENTS):      # multiple agents cant be at the same square at the same time
         for agent2 in range(agent1 + 1, NR_OF_AGENTS):
             for t in range(MAKESPAN + 1):
                 for x in range(WIDTH_OF_GRID):
                     for y in range(LEN_OF_GRID):
-                        cnf.append([-position_to_ID(x, y, agent1, t)], [-position_to_ID(x, y, agent2, t), 0])
+                        cnf.append([-position_to_ID(x, y, agent1, t), -position_to_ID(x, y, agent2, t), 0])
 
     for agent in range(NR_OF_AGENTS):   # clause for allowed agent moves
         for t in range(MAKESPAN):
@@ -78,13 +75,13 @@ def encode(instance):
                                 if (x, y) != (x2, y2):
                                     cnf.append([-position_to_ID(x, y, agent, t), -position_to_ID(x2, y2, agent, t), 0])
 
-    for agent1 in range(NR_OF_AGENTS): # forbiding head on collisions/swaps
-       for agent2 in range(agent1 + 1, NR_OF_AGENTS):
+    for agent1 in range(NR_OF_AGENTS):  # forbidding head-on collisions/swaps
+        for agent2 in range(agent1 + 1, NR_OF_AGENTS):
             for t in range(MAKESPAN):
                 for x in range(WIDTH_OF_GRID):
                     for y in range(LEN_OF_GRID):
-                       for x2, y2 in accessible_neighbour_tiles(x, y, grid):
-                        cnf.append([-position_to_ID(x, y, agent1, t), -position_to_ID(x2, y2, agent1, t + 1), -position_to_ID(x2, y2, agent2, t), -position_to_ID(x, y, agent2, t + 1), 0])
+                        for x2, y2 in accessible_neighbour_tiles(x, y, grid):
+                            cnf.append([-position_to_ID(x, y, agent1, t), -position_to_ID(x2, y2, agent1, t + 1), -position_to_ID(x2, y2, agent2, t), -position_to_ID(x, y, agent2, t + 1), 0])
 
     nr_vars = WIDTH_OF_GRID * LEN_OF_GRID * NR_OF_AGENTS * (MAKESPAN + 1)   
     return (cnf, nr_vars)
