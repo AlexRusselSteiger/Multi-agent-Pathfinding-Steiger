@@ -7,8 +7,6 @@ def load_instance(input_file):
     global LEN_OF_GRID      
     global WIDTH_OF_GRID
     global NR_OF_AGENTS
-    global NR_SQUARES
-    global NR_AT_VAR
 
     grid = []
     agents_starts = []
@@ -88,3 +86,14 @@ def encode(instance):
                     for y in range(LEN_OF_GRID):
                        for x2, y2 in accessible_neighbour_tiles(x, y, grid):
                         cnf.append([-position_to_ID(x, y, agent1, t), -position_to_ID(x2, y2, agent1, t + 1), -position_to_ID(x2, y2, agent2, t), -position_to_ID(x, y, agent2, t + 1), 0])
+
+    nr_vars = WIDTH_OF_GRID * LEN_OF_GRID * NR_OF_AGENTS * (MAKESPAN + 1)   
+    return (cnf, nr_vars)
+
+def call_solver(cnf, nr_vars, output_name, solver_name, verbosity): # writes CNF into output file in DIMACS format
+    with open(output_name, "w") as file:
+        file.write("p cnf " + str(nr_vars) + " " + str(len(cnf)) + "\n")
+        for clause in cnf:
+            file.write(" ".join(str(lit) for lit in clause) + "\n")
+
+    return subprocess.run(["./" + solver_name, "-model", "-verb=" + str(verbosity), output_name], stdout=subprocess.PIPE)   # calls the SAT solver and returns its output
