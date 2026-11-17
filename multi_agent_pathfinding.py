@@ -13,8 +13,8 @@ def load_instance(input_file):   # reads the parameters of instance from the fil
 
     with open(input_file, "r") as file:
         MAKESPAN = int(next(file))
-        LEN_OF_GRID = int(next(file))
         WIDTH_OF_GRID = int(next(file))
+        LEN_OF_GRID = int(next(file))
         grid = [next(file).strip() for i in range(LEN_OF_GRID)]     # reads the map topology line by line and stores into "grid","." for empty, "X" for obstacle
         NR_OF_AGENTS = int(next(file))
 
