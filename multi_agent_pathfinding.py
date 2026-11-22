@@ -152,7 +152,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-v",
         "--verb",
-        default=1,
+        default=0,
         type=int,
         choices=range(0, 2),
         help="Verbosity of the SAT solver used.",
