@@ -14,7 +14,7 @@ There are several variations of MAPF. The one implemented here has the following
 
 ## Encoding
 
-For each cell $(x, y)$, agent $a \in \lbrace 0, \dots, k-1 \rbrace$, and timestep $t \in \lbrace 0, \dots, T \rbrace$, we have a variable $p_{x,y,a,t}$, which means that agent $a$ is at cell $(x, y)$ at time $t$, `position_to_ID(x, y, agent, time)` then gives each variable $p_{x,y,a,t}$ a unique ID:
+For each cell $(x, y)$, agent $a \in \lbrace 0, \dots, k-1 \rbrace$, and timestep $t \in \lbrace 0, \dots, T \rbrace$, there is a variable $p_{x,y,a,t}$, which means that agent $a$ is at cell $(x, y)$ at time $t$. `position_to_ID(x, y, agent, time)` then gives each variable $p_{x,y,a,t}$ a unique ID:
 
 $$\text{ID}(x, y, a, t) = a + x \cdot k + y \cdot W \cdot k + t \cdot L \cdot W \cdot k + 1$$
 
@@ -82,3 +82,121 @@ python multi_agent_pathfinding.py [-h] [-i INPUT] [-o OUTPUT] [-s SOLVER] [-v {0
 - `-s SOLVER`, `--solver SOLVER`: Name of the SAT solver executable in the working directory (default "glucose-syrup", on Windows use "glucose-syrup.exe").
 - `-v {0,1}`, `--verb {0,1}`: Verbosity of the SAT solver (0 = minimal output, 1 = solver statistics such as the number of variables and clauses, conflicts and CPU time; default 0).
 - `-c`, `--print-cnf`: Also print the CNF formula to standard output before the solver is called.
+
+## Example instances
+
+All instances are in the `instances/` directory. In the previews, `AX` is the start of agent `X`, `TX` is its target, and `AX/TY` is a cell where agent `X` starts and agent `Y` ends. The paths described below are from my runs, the solver may find a different solution. Full outputs of all runs are in [all_runs.md](all_runs.md).
+
+- **`small-unsat.in`** ($3 \times 1$, 2 agents, `MAKESPAN = 2`): Two agents in a corridor want to swap places. There is no place where they could pass each other, so the instance is `UNSAT` for any makespan.
+
+```
+  A0/T1 .  A1/T0
+```
+
+- **`small-sat.in`** ($3 \times 2$, 2 agents, `MAKESPAN = 5`): The same swap, but with one open cell below the middle of the corridor. Agent `0` steps down to `(1, 1)` at $t = 2$, agent `1` passes along the top row, and agent `0` then goes back up and reaches `(2, 0)` at $t = 5$. The shortest possible makespan is 4, with `MAKESPAN = 3` the instance is `UNSAT`.
+
+```
+  A0/T1 .  A1/T0
+  X     .  X
+```
+
+- **`test1-solo.in`** ($10 \times 10$, 1 agent, `MAKESPAN = 18`): One agent goes across an empty grid from `(0, 0)` to `(9, 9)` in 18 steps, which is exactly the Manhattan distance, so 18 is also the shortest possible makespan.
+
+```
+  A0 .  .  .  .  .  .  .  .  .
+  .  .  .  .  .  .  .  .  .  .
+  .  .  .  .  .  .  .  .  .  .
+  .  .  .  .  .  .  .  .  .  .
+  .  .  .  .  .  .  .  .  .  .
+  .  .  .  .  .  .  .  .  .  .
+  .  .  .  .  .  .  .  .  .  .
+  .  .  .  .  .  .  .  .  .  .
+  .  .  .  .  .  .  .  .  .  .
+  .  .  .  .  .  .  .  .  .  T0
+```
+
+- **`test2-loop.in`** ($5 \times 3$, 2 agents, `MAKESPAN = 6`): Two agents on opposite sides of a wall (`XXX`) with swapped targets. Agent `0` goes through the lower corridor and agent `1` through the upper one, and both reach their targets at $t = 6$ without waiting. With `MAKESPAN = 5` the instance is `UNSAT`.
+
+```
+  .     .  .  .  .
+  A0/T1 X  X  X  A1/T0
+  .     .  .  .  .
+```
+
+- **`test3-corridor.in`** ($7 \times 3$, 2 agents, `MAKESPAN = 8`): Two agents meet in a corridor one cell wide, with one open cell in the middle. They meet at $t = 3$, agent `0` steps up to `(3, 0)` at $t = 4$, agent `1` passes below it, and both reach their targets at $t = 8$. Going into the open cell and back costs 2 extra steps, so 8 is the shortest possible makespan.
+
+```
+  X     X  X  .  X  X  X
+  A0/T1 .  .  .  .  .  A1/T0
+  X     X  X  X  X  X  X
+```
+
+- **`medium-sat.in`** ($10 \times 10$, 8 agents, `MAKESPAN = 18`): Four pairs of agents go around symmetric obstacle blocks (`XX`) and swap corners by $t = 18$. With `MAKESPAN = 17` the instance is `UNSAT`.
+
+```
+  A0/T1 .   .   A4/T5 .   .   .   .   .   A2/T3
+  .     X   X   .     .   .   .   X   X   .
+  .     X   X   .     .   .   .   X   X   .
+  A6/T7 .   .   .     .   .   .   .   .   .
+  .     .   .   X     X   X   X   .   .   .
+  .     .   .   X     X   X   X   .   .   .
+  .     .   .   .     .   .   .   .   .   A7/T6
+  .     X   X   .     .   .   .   X   X   .
+  .     X   X   .     .   .   .   X   X   .
+  A3/T2 .   .   .     .   .   T4/A5 .   .   A1/T0
+```
+
+- **`big-sat.in`** ($12 \times 12$, 16 agents, `MAKESPAN = 24`): 16 agents along all four borders of an empty grid go through the middle to the opposite borders by $t = 24$. The makespan is not tight, the instance is solvable already with `MAKESPAN = 20`, which is the Manhattan distance of the agents on the top and bottom border.
+
+```
+  .     A0/T5 .     A1/T6 .     A2/T7 .     A3/T8 .     A4/T9 .     .
+  .     .     .     .     .     .     .     .     .     .     .     .
+  A10   .     .     .     .     .     .     .     .     .     .     A13
+  T15   .     .     .     .     .     .     .     .     .     .     T12
+  .     .     .     .     .     .     .     .     .     .     .     .
+  A11   .     .     .     .     .     .     .     .     .     .     A14
+  T14   .     .     .     .     .     .     .     .     .     .     T11
+  .     .     .     .     .     .     .     .     .     .     .     .
+  A12   .     .     .     .     .     .     .     .     .     .     A15
+  T13   .     .     .     .     .     .     .     .     .     .     T10
+  .     .     .     .     .     .     .     .     .     .     .     .
+  .     A5/T0 .     A6/T1 .     A7/T2 .     A8/T3 .     A9/T4 .     .
+```
+
+- **`CRAZY-sat.in`** ($15 \times 14$, 22 agents, `MAKESPAN = 29`): The largest instance. 22 agents on an irregular map with many narrow passages. This is the instance where the solver alone runs for more than 10 s.
+
+```
+  .     T7    X     .     .     .     A10   X     .     X     .     A17   T11   .     .
+  T4    T0    .     .     .     .     .     .     .     X     .     T15   .     T21   .
+  X     X     A13   A3    X     .     .     .     .     .     .     X     T20   .     .
+  .     .     .     .     .     X     .     .     .     X     .     .     .     A5    .
+  .     X     .     .     X     .     .     .     .     .     .     A12   T8    .     .
+  T6    .     X     .     .     .     .     X     .     X     .     .     A9    .     .
+  .     T9    .     X     .     .     .     .     .     .     X     .     X     .     .
+  A11   .     .     X     A16   .     .     .     .     X     .     .     .     X     .
+  .     X     .     A1    .     .     .     X     .     X     X     .     .     .     A19
+  .     X     .     .     .     A14   X     X     X     X     A0    .     A6    A7    .
+  .     .     A15   A20   .     .     .     .     .     .     A4    X     X     .     .
+  T5    .     .     X     .     .     .     .     .     .     X     X     .     .     .
+  .     T12   .     .     .     X     .     T17   .     X     .     T16   T3    T13   .
+  A2    A21   .     A18   .     A8    .     .     .     X     .     T1    T10   .     .
+```
+
+## Experiments
+
+Experiments were run on Windows 11 with an AMD Ryzen 9 8945H (4.00 GHz) CPU and 16 GB RAM.
+
+Total time was measured in PowerShell with `System.Diagnostics.Stopwatch` for the whole run (loading the instance, generating the CNF and writing it to a file, running `glucose-syrup.exe`, and decoding the result). Solver time is the time reported by `glucose-syrup`.
+
+| Instance | Grid ($W \times L$) | Agents ($k$) | Makespan ($T$) | Variables | Clauses | Result | Solver Time (s) | Total Time (s) |
+|:---------|:-------------------:|-------------:|---------------:|----------:|--------:|:------:|----------------:|---------------:|
+| `small-unsat.in` | $3 \times 1$ | 2 | 2 | 18 | 69 | UNSAT | < 0.01 | 0.08 |
+| `small-sat.in` | $3 \times 2$ | 2 | 5 | 72 | 510 | SAT | < 0.01 | 0.08 |
+| `test2-loop.in` | $5 \times 3$ | 2 | 6 | 210 | 3,421 | SAT | 0.01 | 0.09 |
+| `test3-corridor.in` | $7 \times 3$ | 2 | 8 | 378 | 8,321 | SAT | 0.01 | 0.09 |
+| `test1-solo.in` | $10 \times 10$ | 1 | 18 | 1,900 | 189,902 | SAT | 0.07 | 0.41 |
+| `medium-sat.in` | $10 \times 10$ | 8 | 18 | 15,200 | 1,705,472 | SAT | 0.85 | 3.85 |
+| `big-sat.in` | $12 \times 12$ | 16 | 24 | 57,600 | 10,244,768 | SAT | 1.80 | 19.94 |
+| `CRAZY-sat.in` | $15 \times 14$ | 22 | 29 | 138,600 | 34,810,589 | SAT | 11.15 | 79.38 |
+
+The solver itself is fast even on the largest instances, but most of the total time is spent generating the CNF and writing it to the file.
