@@ -43,7 +43,10 @@ def accessible_neighbour_tiles(x, y, grid):
 def encode(grid, agents_starts, agents_targets):
     cnf = []
 
-    for agent, (x,y) in enumerate(agents_starts):   # starting agents positions
+    for agent, (x,y) in enumerate(agents_starts):   # starting agents positions, they have to be open
+        if grid[y][x] == "X":
+            print(f"Agent {agent} starts on an obstacle ({x}, {y})")
+            exit(1)
         cnf.append([position_to_ID(x, y, agent, 0), 0])
 
     for agent, (x,y) in enumerate(agents_targets):      # target agents positions
